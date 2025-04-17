@@ -26,7 +26,7 @@ lastchatbot/
 │   │   └── supabase_service.py
 │   ├── models/           # Pydantic 데이터 모델
 │   │   └── chat.py
-│   └── .env              # 환경 변수 설정 파일 (템플릿)
+│   └── .env              # 환경 변수 설정 파일
 ├── requirements.txt      # Python 의존성 목록
 └── README.md             # 프로젝트 설명
 ```
@@ -41,9 +41,9 @@ lastchatbot/
 
 2.  **가상 환경 생성 및 활성화:**
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # Linux/macOS
-    # venv\Scripts\activate  # Windows
+    python -m venv .venv
+    source .venv/bin/activate  # Linux/macOS
+    # .venv\Scripts\activate  # Windows
     ```
 
 3.  **의존성 설치:**
@@ -52,23 +52,35 @@ lastchatbot/
     ```
 
 4.  **환경 변수 설정:**
-    - `app/.env.example` 파일을 `app/.env`로 복사합니다.
-    - `app/.env` 파일을 열고 실제 Supabase URL, Supabase Key, Gemini API Key 등의 값을 입력합니다.
+    - `app/.env` 파일을 확인하고 Supabase URL, Supabase Key, Gemini API Key 등의 값을 올바르게 설정합니다.
     ```dotenv
     # app/.env
+    GOOGLE_API_KEY=YOUR_GOOGLE_API_KEY
+    
+    # Supabase 설정
     SUPABASE_URL="YOUR_SUPABASE_URL"
-    SUPABASE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY" # 또는 필요한 권한의 키
+    SUPABASE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
+    
+    # Gemini 설정
     GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
-
-    # Optional: Supabase vector search function name and embedding model
-    PGVECTOR_MATCH_FUNCTION="match_documents" # Supabase에 생성한 함수 이름 확인
-    EMBEDDING_MODEL_NAME="models/embedding-001"
-    GENERATIVE_MODEL_NAME="gemini-1.5-flash-preview-001" # 또는 gemini-1.5-pro-preview-001
+    EMBEDDING_MODEL_NAME="models/text-embedding-004"
+    GENERATIVE_MODEL_NAME="gemini-1.5-flash-latest"
+    
+    # 벡터 검색 설정
+    PGVECTOR_MATCH_FUNCTION="match_documents"
     VECTOR_SEARCH_TOP_K=20
-    ALLOWED_ORIGINS="*" # 개발용, 프로덕션에서는 실제 도메인 명시 (예: "http://localhost:3000,https://yourdomain.com")
+    
+    # CORS 설정
+    ALLOWED_ORIGINS="*"
+    
+    # Google Cloud 설정
+    GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID
+    GOOGLE_CLOUD_LOCATION=us-central1
+    GOOGLE_GENAI_USE_VERTEXAI=False
     ```
     * **주의:** Supabase Key는 보안에 유의하여 관리하세요.
     * `PGVECTOR_MATCH_FUNCTION`은 Supabase 프로젝트에 생성한 벡터 검색 함수의 이름과 일치해야 합니다. (예: `match_documents`)
+    * `EMBEDDING_MODEL_NAME`과 `GENERATIVE_MODEL_NAME`은 Gemini API에서 지원하는 모델로 설정해야 합니다.
 
 5.  **Supabase 설정 확인:**
     - Supabase 프로젝트에 `documents` 테이블이 있고, `embedding` 컬럼 (pgvector 타입) 및 `content` 컬럼 등이 있는지 확인합니다.
@@ -108,6 +120,12 @@ POST 요청을 `/chatbot` 엔드포인트로 보냅니다.
   "reply": "내일 모레 죽도 해수욕장은 오전에 파도가 좀 작지만 오후에는 1.2미터 정도의 힘 있는 파도가 9초 주기로 들어올 것 같아요. 바람은 약간 강한 온쇼어(바다->육지)가 예상돼서 파도 면이 조금 지저분할 수 있지만, 중급 이상 서퍼라면 충분히 즐길 수 있을 거예요. 초보자는 조금 힘들 수 있으니 참고하세요!"
 }
 ```
+
+## 문제 해결
+
+- **임베딩 모델 오류:** `models/text-embedding-004`와 같은 올바른 Gemini 임베딩 모델명을 사용하고 있는지 확인하세요.
+- **API 키 오류:** Gemini API 키가 올바르게 설정되어 있는지 확인하세요. Gemini API를 사용하기 위해서는 Google Cloud 콘솔에서 API를 활성화해야 할 수 있습니다.
+- **모델 응답 오류:** 최신 Gemini API에 맞게 `generate_content_async` 응답을 처리하고 있는지 확인하세요.
 
 ## 추가 고려 사항
 

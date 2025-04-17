@@ -101,19 +101,14 @@ class RAGAgent:
 
             logger.debug(f"Gemini 호출 프롬프트 생성 완료 (컨텍스트 포함: {bool(context)})")
 
-            # 3. Gemini 모델 호출하여 답변 생성 (use generate_content_async for async)
+            # 3. Gemini 모델 호출하여 답변 생성 (최신 방식으로 업데이트)
             logger.info("Gemini 모델 호출 시작...")
             response = await self.model.generate_content_async(prompt)
             logger.info("Gemini 모델 호출 완료.")
 
             # 안전 설정 등으로 인해 콘텐츠가 없을 경우 처리
-            if not response.candidates or not response.candidates[0].content.parts:
+            if not response or not response.text:
                  logger.warning("Gemini 응답 생성 실패 또는 안전 설정에 의해 차단됨")
-                 try:
-                     # Log feedback if available
-                     logger.warning(f"Prompt Feedback: {response.prompt_feedback}")
-                 except Exception:
-                     pass # Feedback might not always be present
                  # Provide a user-friendly message about the failure
                  return "죄송합니다. 답변을 생성하는 데 예상치 못한 문제가 발생했습니다." # More generic error
 

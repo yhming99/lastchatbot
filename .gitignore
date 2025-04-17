@@ -1,3 +1,10 @@
 /.venv
 /findyourwave_chatbot (1).json
 __pycache__/
+*.pyc
+app/.env
+.env
+.DS_Store
+*.log
+logs/
+test_*.py

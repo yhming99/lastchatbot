@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL_NAME", "models/embedding-001")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL_NAME", "models/text-embedding-004")
 MATCH_FUNCTION = os.getenv("PGVECTOR_MATCH_FUNCTION", "match_documents")
 MATCH_COUNT = int(os.getenv("VECTOR_SEARCH_TOP_K", "20"))
 
@@ -66,8 +66,6 @@ async def get_supabase_client() -> AsyncClient | None:
 async def get_gemini_embedding(text: str) -> List[float] | None:
     """주어진 텍스트에 대한 Gemini 임베딩 벡터를 생성합니다. 실패 시 None 반환."""
     # Check if API key is configured *before* making the call
-    # Accessing genai.config might not be the standard way; check documentation if needed.
-    # A simple check if configure was likely successful (no error logged) and key existed.
     if not GEMINI_API_KEY:
          logger.error("Gemini API Key가 구성되지 않아 임베딩을 생성할 수 없습니다.")
          return None
@@ -75,13 +73,13 @@ async def get_gemini_embedding(text: str) -> List[float] | None:
         logger.warning("임베딩할 텍스트가 비어있습니다.")
         return None
     try:
-        # Use the correct async function from the google.generativeai library
+        # 올바른 임베딩 생성 방식으로 수정
         result = await genai.embed_content_async(
             model=EMBEDDING_MODEL,
             content=text,
             task_type="retrieval_query"
         )
-        embedding = result.get('embedding')
+        embedding = result['embedding']
         if not embedding:
             logger.error("Gemini API가 임베딩을 반환하지 않았습니다.")
             return None
@@ -103,12 +101,13 @@ async def query_supabase_vector(embedding: List[float]) -> List[dict] | None:
         return None
 
     try:
-        response = await supabase.rpc(
+        # 매개변수 수정 - Supabase의 match_documents 함수에 맞게 변경
+        response = supabase.rpc(
             MATCH_FUNCTION,
             {
                 'query_embedding': embedding,
-                'match_threshold': 0.70, # Adjust as needed
                 'match_count': MATCH_COUNT,
+                'filter': {}  # 필요한 경우 필터 조건 추가
             }
         ).execute()
 
